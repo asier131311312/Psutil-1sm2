@@ -1,28 +1,39 @@
 import psutil
+import csv
+from csv import DictWriter
+
 import pandas as pd
 import openpyxl
+import os
+from datetime import date
 print("INFORMACIÓN DEL SISTEMA")
 print("**********************")
 print("Tiempo de los procesos")
-info = psutil.cpu_times()
-print("Tiempo de procesos del usuario: "+str(info.user))
-print("Tiempo de procesos del sistema: "+str(info.system))
+
+hoy = date.today()
 
 
+tiempos = psutil.cpu_times()
+estadisticas = psutil.cpu_stats()
+memoria = psutil.virtual_memory()
+file_exists = os.path.isfile("tiempos.csv")
+headersCSV = ['fecha','usuario','sistema','inactividad']      
+dict={'fecha':hoy,'usuario':tiempos.user,'sistema':tiempos.system,'inactividad':tiempos.idle}
 
-data = {'Lunes':[1],
-        'Martes':[2],
-        'Miercoles':[3],
-        'Jueves':[4],
-        'Viernes':[5],
-        'Sabado':[6],
-        'Domingo':[7]}
+  
+with open('tiempos.csv', 'a', newline='') as f_object:
+    dictwriter_object = DictWriter(f_object, fieldnames=headersCSV)
+    if not file_exists:
+        dictwriter_object.writeheader()
+    dictwriter_object.writerow(dict)
+   
+    f_object.close()
 
-df = pd.DataFrame(data, columns = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'])
+import seaborn as sns
+import matplotlib.pyplot as plt
+csv = pd.read_csv(r'tiempos.csv', sep=",")
+res =sns.scatterplot(x="fecha", y="sistema",data=csv)
+plt.show()
 
-print(df)
-wb = openpyxl.example.xlsx
-hoja = wb.active
-df = pd.to_excel('example.xlsx')
 
 print(psutil.cpu_times())
